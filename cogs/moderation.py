@@ -2,8 +2,6 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.errors import ExtensionNotFound, ExtensionNotLoaded
 
-from datetime import datetime as dt
-
 
 class Moderation(commands.Cog, name="Moderation"):
 	def __init__(self, bot):
@@ -26,15 +24,13 @@ class Moderation(commands.Cog, name="Moderation"):
 		
 		Usage: /slowmode [delay]
 		"""
-
 		# creating embed
-		title = None
 		if delay == 0:
-			title = f"{self.bot.tick} Turned off slowmode."
+			description = f"Turned off slowmode."
 		else:
-			title = f"{self.bot.tick} Set slowmode to `{delay}` seconds." 
-		embed = discord.Embed(title=title,
-							  timestamp=dt.utcnow(),
+			description = f"Set slowmode to {delay} seconds." 
+		embed = discord.Embed(description=description,
+							  timestamp=ctx.message.created_at,
 							  color=0x60DB71)
 
 		# setting slowmode and sending embed
@@ -55,7 +51,7 @@ class Moderation(commands.Cog, name="Moderation"):
 		if limit > 1000:
 			limit = 1000
 
-		# delets messages
+		# deletes messages
 		await ctx.message.delete()
 		if user:
 			check = lambda m:m.author == user
@@ -64,8 +60,8 @@ class Moderation(commands.Cog, name="Moderation"):
 			deleted = await ctx.channel.purge(limit=limit)
 		
 		# creating and sending embed
-		embed = discord.Embed(title=f"{self.bot.tick} Deleted `{len(deleted)}` messages.",
-							  timestamp=dt.utcnow(),
+		embed = discord.Embed(title=f"Deleted {len(deleted)} messages.",
+							  timestamp=ctx.message.created_at,
 							  color=0x60DB71)
 		await ctx.send(embed=embed, delete_after=10.0)
 
@@ -78,9 +74,9 @@ class Moderation(commands.Cog, name="Moderation"):
 
 		Usage: /kick <user>
 		"""
-		embed = discord.Embed(title=f"{self.bot.tick} Kicked `{user}`.",
+		embed = discord.Embed(title=f"Kicked `{user}`.",
 							  description=f"**Reason** ```{reason}```",
-							  timestamp=dt.utcnow(),
+							  timestamp=ctx.message.created_at,
 							  color=0x60DB71)
 
 		# kicking the specified user and sending embed
@@ -96,9 +92,9 @@ class Moderation(commands.Cog, name="Moderation"):
 
 		Usage: /ban <user>
 		"""
-		embed = discord.Embed(title=f"{self.bot.tick} Banned `{user}`.",
+		embed = discord.Embed(title=f"Banned `{user}`.",
 							  description=f"**Reason** ```{reason}```",
-							  timestamp=dt.utcnow(),
+							  timestamp=ctx.message.created_at,
 							  color=0x60DB71)
 
 		# banning the specified user and sending embed
@@ -118,9 +114,9 @@ class Moderation(commands.Cog, name="Moderation"):
 		user_name, user_discrim = user.split("#")
 
 		# creating embed
-		embed = discord.Embed(title=f"{self.bot.tick} Unbanned `{user_name}#{user_discrim}`.",
+		embed = discord.Embed(title=f"Unbanned `{user_name}#{user_discrim}`.",
 							  description=f"**Reason** ```{reason}```",
-							  timestamp=dt.utcnow(),
+							  timestamp=ctx.message.created_at,
 							  color=0x60DB71)
 		
 		for ban in banned_users:
@@ -131,5 +127,5 @@ class Moderation(commands.Cog, name="Moderation"):
 				await ctx.send(embed=embed)
 
 	
-def setup(bot):
-	bot.add_cog(Moderation(bot=bot))
+async def setup(bot):
+	await bot.add_cog(Moderation(bot=bot))

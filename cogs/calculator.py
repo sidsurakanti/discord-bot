@@ -18,20 +18,15 @@ class Calculator(commands.Cog, name="Calculator"):
 	@commands.command(aliases=["calc", "calculator"])
 	async def calculate(self, ctx, *, expr: str):
 		"""
-		Calculates simple arithmetic operations (+, -, *, /).
+		Calculates simple expressions (+, -, *, /).
 		
 		Usage: /calculate <expression> 
-		Example: /calc 8 * 8
+		Example: /calc 8 * 8 / 2
 		"""
 		result = calc(expr.replace(',', ''))
-
-		# removes the digits after the decimal point if they're are equal to 0
-		if (num:=result.split('.'))[-1] == "0":
-			result = int(num[0])
-
-		embed = discord.Embed(title=f"`{result}`")
+		embed = discord.Embed(description=f"{result}")
 		await ctx.send(embed=embed)
 
 
-def setup(bot):
-	bot.add_cog(Calculator(bot=bot))
+async def setup(bot):
+	await bot.add_cog(Calculator(bot=bot))
