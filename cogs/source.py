@@ -2,20 +2,17 @@ import discord
 from discord.ext import commands
 
 from inspect import getsource
-from datetime import datetime as dt
 
 
 class Source(commands.Cog, name="Source"):
 	def __init__(self, bot):
 		self.bot = bot
 
-
 	def cog_check(self, ctx):
 		if ctx.guild is None:
 			return False
 		else:
 			return True
-
 
 	@commands.command(aliases=["src"])
 	async def source(self, ctx, name = None):
@@ -28,7 +25,7 @@ class Source(commands.Cog, name="Source"):
 			return
 		if (command:= self.bot.get_command(name)) is None: 
 			embed = discord.Embed(title=f"{self.bot.wrong} Command not found: `{name}`.",
-								  timestamp=dt.utcnow(),
+								  timestamp=ctx.message.created_at,
 							  	  color=0xE85936)
 			return await ctx.send(embed=embed)
 		
@@ -47,7 +44,7 @@ class Source(commands.Cog, name="Source"):
 			source = getsource(command.callback) 
 		except AttributeError: 
 			embed = discord.Embed(title=f"{self.bot.wrong} Command doesn't exist: {name}",
-								  timestamp=dt.utcnow(),
+								  timestamp=ctx.message.created_at,
 							  	  color=0xE85936)
 			return await ctx.send(embed=embed)
 		
@@ -57,5 +54,5 @@ class Source(commands.Cog, name="Source"):
 			await ctx.send(f'```py\n{page}```')
 
 
-def setup(bot):
-	bot.add_cog(Source(bot=bot))
+async def setup(bot):
+	await bot.add_cog(Source(bot=bot))

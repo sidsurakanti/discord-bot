@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 
-from datetime import datetime as dt
 import random
 
 
@@ -15,7 +14,6 @@ class Commands(commands.Cog, name="Commands"):
 		else:
 			return True
 
-
 	@commands.command()
 	async def ping(self, ctx):
 		"""
@@ -24,10 +22,13 @@ class Commands(commands.Cog, name="Commands"):
 		Usage: /ping
 		"""
 		latency = round(self.bot.latency * 1000)  
-		embed = discord.Embed(title=f"`{latency}`ms", color=self.bot.user.color)
+		embed = discord.Embed(
+							  description=f"{latency}ms", 
+							  color=self.bot.user.color,
+							  timestamp=ctx.message.created_at
+							  )
 		await ctx.send(embed=embed)
 		
-
 	@commands.command()
 	async def say(self, ctx, channel: discord.TextChannel, *, text: str):
 		"""
@@ -37,7 +38,6 @@ class Commands(commands.Cog, name="Commands"):
 		"""
 		await channel.send(text, allowed_mentions=discord.AllowedMentions().none())
 		
-
 	@commands.command()
 	async def choose(self, ctx, *args):
 		"""
@@ -46,10 +46,11 @@ class Commands(commands.Cog, name="Commands"):
 
 		Usage: /choose [choices]
 		"""
-		choices = args or ["Yes.", "No."]
-		answer = random.choice(choices) 
-		await ctx.send(answer)
-	
+		choices = args or ["Yes", "No"]
+		answer = random.choice(choices)
+		embed = discord.Embed(description=answer,
+							  timestamp=ctx.message.created_at)
+		await ctx.send(embed=embed)
 
 	@commands.group(aliases=["av", "pfp"], invoke_without_command=True)
 	async def avatar(self, ctx, *, user: discord.Member = None):
@@ -62,9 +63,9 @@ class Commands(commands.Cog, name="Commands"):
 		user = user or ctx.author
 		
 		# creating and sending embed
-		embed = discord.Embed(color=user.color, timestamp=dt.utcnow())
-		embed.set_image(url=user.avatar_url)
-		embed.set_author(name=user, icon_url=user.avatar_url)
+		embed = discord.Embed(color=user.color, timestamp=ctx.message.created_at)
+		embed.set_image(url=user.display_avatar.url)
+		embed.set_author(name=user, icon_url=user.display_avatar.url)
 		await ctx.send(embed=embed)
 
 	@avatar.command()
@@ -77,11 +78,10 @@ class Commands(commands.Cog, name="Commands"):
 		user = ctx.author
 
 		# creating and sending embed
-		embed = discord.Embed(color=user.color, timestamp=dt.utcnow())
-		embed.set_image(url=ctx.guild.icon_url)
-		embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+		embed = discord.Embed(color=user.color, timestamp=ctx.message.created_at)
+		embed.set_image(url=ctx.guild.icon)
+		embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
 		await ctx.send(embed=embed)
-
 
 	@commands.command(aliases=["userinfo", "whois"])
 	async def info(self, ctx, *, user: discord.Member = None):
@@ -91,7 +91,6 @@ class Commands(commands.Cog, name="Commands"):
 
 		Usage: /info [user]
 		"""
-
 		# gets user info
 		user = user or ctx.author 
 		roles = [role.mention for role in user.roles if role.name != "@everyone"]
@@ -100,23 +99,20 @@ class Commands(commands.Cog, name="Commands"):
 
 		# creating and sending embed
 		embed = discord.Embed(color=user.color,
-							  timestamp=dt.utcnow())
-		embed.description = f"""
-							**Name `{str(user)}`**
-							**Nickname `{user.nick}`**
-							**Bot `{user.bot}`**
-							**Color `{user.color}`**
-							\u200b
-							"""
-		embed.set_thumbnail(url=user.avatar_url)
+							  timestamp=ctx.message.created_at)
+		embed.set_author(
+						name=f"{user}", 
+						icon_url=user.display_avatar.url
+						)		
+		embed.set_thumbnail(url=user.display_avatar.url)
+		embed.add_field(name="Joined", value=f"{join_date}")
+		embed.add_field(name="Registered", value=f"{registered_date}")
 		embed.set_footer(text=f"ID: {user.id}")
-		embed.add_field(name="Date Joined", value=f"**`{join_date}`**")
-		embed.add_field(name="Date Registered", value=f"**`{registered_date}`**")
+		
 		if roles:
-			embed.add_field(name="Roles", value=" ".join(roles), inline=0)
-
+			embed.add_field(name="Roles", value=" ".join(roles), inline=False)
+		
 		await ctx.send(embed=embed)
-	
 	
 	@commands.command()
 	async def serverinfo(self, ctx):
@@ -125,8 +121,7 @@ class Commands(commands.Cog, name="Commands"):
 
 		Usage: /serverinfo
 		"""
-		 
-		# data
+		# get info
 		guild = ctx.guild
 		roles = [role.mention for role in guild.roles if role.name != "@everyone"]
 		text_channels = len(guild.text_channels)
@@ -135,24 +130,23 @@ class Commands(commands.Cog, name="Commands"):
 		member_count = guild.member_count 
 		created_at = guild.created_at.strftime("%a, %b %d, %Y")
 
-		# creating and sending embed
+		# create embed
 		embed = discord.Embed(title=guild.name, 
 							  color=ctx.author.color,
-							  timestamp=dt.utcnow())
-		embed.set_thumbnail(url=guild.icon_url)
+							  timestamp=ctx.message.created_at)
+		embed.set_thumbnail(url=guild.icon)
 		embed.set_footer(text=f"ID: {guild.id}")
 
 		embed.add_field(name="Owner", value=owner.mention)
-		embed.add_field(name="Created At", value=f"**`{created_at}`**")
+		embed.add_field(name="Created", value=f"{created_at}")
 		embed.add_field(name="\u200b", value="\u200b")  # empty field
-		embed.add_field(name="Text Channels", value=f"**`{text_channels}`**")
-		embed.add_field(name="Voice Channels", value=f"**`{voice_channels}`**")
-		embed.add_field(name="Member Count", value=f"**`{member_count}`**")
+		embed.add_field(name="Text Channels", value=f"{text_channels}")
+		embed.add_field(name="Voice Channels", value=f"{voice_channels}")
+		embed.add_field(name="Member Count", value=f"{member_count}")
 		if roles:
 			embed.add_field(name="Roles", value=" ".join(roles), inline=0)
 		
 		await ctx.send(embed=embed)
-
 
 	@commands.command()
 	async def emojis(self, ctx):
@@ -162,16 +156,16 @@ class Commands(commands.Cog, name="Commands"):
 		Usage: /emojis 
 		"""
 		emojis = ctx.guild.emojis
-		embed = discord.Embed(title="Emojis", color=ctx.author.color, timestamp=dt.utcnow())
+		embed = discord.Embed(title="Emojis", color=ctx.author.color, timestamp=ctx.message.created_at)
 		embed.description = f"""
-							**Count `{len(emojis)}`**
-							**Animated `{len(list(filter(lambda e:e.animated, emojis)))}`**
-							**Regular `{len(list(filter(lambda e:not e.animated, emojis)))}`**
+								Count: `{len(emojis)}`
+								Animated: `{len(list(filter(lambda e:e.animated, emojis)))}`
+								Regular: `{len(list(filter(lambda e:not e.animated, emojis)))}`
 
-							{" ".join(map(str, emojis))}
+								{" ".join(map(str, emojis))}
 							"""
 		await ctx.send(embed=embed)
 
 
-def setup(bot):
-	bot.add_cog(Commands(bot=bot))
+async def setup(bot):
+	await bot.add_cog(Commands(bot=bot))

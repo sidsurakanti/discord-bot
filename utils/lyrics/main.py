@@ -4,7 +4,6 @@ from utils.config import LYRICS_KEY as KEY
 
 BASE_URL = f"https://api.musixmatch.com/ws/1.1/"
 
-
 def get_lyrics(name, artist):
     if artist != None: # if artist isn't provided
         url = f"{BASE_URL}/track.search?apikey={KEY}&q_track={name}&q_artist={artist}"

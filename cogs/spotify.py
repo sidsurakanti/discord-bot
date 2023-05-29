@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 
-from datetime import datetime 
-
 from utils.spotify.main import get_track
 from utils.lyrics.main import get_lyrics
 
@@ -26,8 +24,6 @@ class Spotify(commands.Cog, name="Spotify"):
 
 		Usage: /listening [user]
 		"""
-
-		# sets user to ctx.author if user isn't specified
 		user = user or ctx.author  
 
 		for activity in user.activities:
@@ -39,7 +35,7 @@ class Spotify(commands.Cog, name="Spotify"):
 				embed = discord.Embed(title=activity.title, 
 									  url=get_track(activity.track_id),
 									  color=0x60DB71,
-							  		  timestamp=datetime.utcnow())
+							  		  timestamp=ctx.message.created_at)
 
 				embed.set_image(url=activity.album_cover_url) 
 				embed.add_field(name="Artist", value=", ".join(activity.artists), inline=0)
@@ -50,7 +46,6 @@ class Spotify(commands.Cog, name="Spotify"):
 		
 		# if the user isn't listening to anything
 		else: 
-			# creating and sending embed
 			embed = discord.Embed(title=f"{self.bot.wrong} You're not listening to anything right now.",
 								  color=0xE85936)
 			await ctx.send(embed=embed)
@@ -63,7 +58,6 @@ class Spotify(commands.Cog, name="Spotify"):
 
 		Usage: /lyrics <name> <artist>
 		"""
-
 		# if aritist isn't provided
 		if artist is None:  
 			embed = discord.Embed(title=f"{self.bot.wrong} Please provide an artist.",
@@ -74,8 +68,8 @@ class Spotify(commands.Cog, name="Spotify"):
 		lyrics = get_lyrics(name, artist)
 		embed = discord.Embed(description=f"""```{lyrics}```""",
 							  color=0x60DB71,
-							  timestamp=datetime.utcnow())
-		embed.set_footer(text="Powered by https://musixmatch.com")
+							  timestamp=ctx.message.created_at)
+		embed.set_footer(text="Powered by musixmatch")
 		await ctx.send(embed=embed)
 	
 
@@ -87,8 +81,6 @@ class Spotify(commands.Cog, name="Spotify"):
 
 		Usage: /lyrics current [user]
 		"""
-
-		# sets user to ctx.author
 		user = user or ctx.author
 
 		for activity in user.activities:
@@ -100,9 +92,9 @@ class Spotify(commands.Cog, name="Spotify"):
 
 				# creating and sending embed
 				embed = discord.Embed(description=f"""```{lyrics}```""",
-							  		  timestamp=datetime.utcnow(),
+							  		  timestamp=ctx.message.created_at,
 									  color=0x60DB71)
-				embed.set_footer(text="Powered by https://musixmatch.com")
+				embed.set_footer(text="Powered by musixmatch")
 				embed.set_author(name=f"{name} by {artist}")
 
 				return await ctx.send(embed=embed)	
@@ -110,15 +102,14 @@ class Spotify(commands.Cog, name="Spotify"):
 		# if the user isn't listening to anything
 		else: 
 			# creating and sending embed
-			title = None 
+			description = None 
 			if user != ctx.author:
-				title = f"{self.bot.wrong} `{user}` is not listening to spotify right now."
+				description = f"{user} is not listening to spotify right now."
 			else: 
-				title = f"{self.bot.wrong} You're not listening to anything on spotify right now."
-			embed = discord.Embed(title=title, color=0xE85936)
+				description = f"You're not listening to anything on spotify right now."
+			embed = discord.Embed(description=description, color=0xE85936)
 			await ctx.send(embed=embed)
 
 
-
-def setup(bot):
-	bot.add_cog(Spotify(bot=bot))
+async def setup(bot):
+	await bot.add_cog(Spotify(bot=bot))

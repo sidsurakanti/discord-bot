@@ -1,9 +1,6 @@
 import discord
 from discord.ext import commands
 
-from datetime import datetime as dt
-
-
 class Errors(commands.Cog, name="Errors"):
 	def __init__(self, bot):
 		self.bot = bot
@@ -14,16 +11,14 @@ class Errors(commands.Cog, name="Errors"):
 		else:
 			return True
 
-
 	@commands.Cog.listener()
 	async def on_command_error(self, ctx, error):
-		"""If a command fails to execute properly."""
 		print(error.__class__.__name__, error)
-		embed = discord.Embed(title=f"{self.bot.wrong} Error while invoking command: `{error.__class__.__name__}`",
-							  timestamp=dt.utcnow(),
+		embed = discord.Embed(description=f"Error while invoking command: {error.__class__.__name__}",
+							  timestamp=ctx.message.created_at,
 							  color=0xE85936)
 		return await ctx.send(embed=embed)
 
 
-def setup(bot):
-	bot.add_cog(Errors(bot=bot))
+async def setup(bot):
+	await bot.add_cog(Errors(bot=bot))
